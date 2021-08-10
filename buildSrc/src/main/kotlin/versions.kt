@@ -1,0 +1,6 @@
+const val ktorVersion = "1.6.2"
+const val hibernateValidatorVersion = "7.0.1.Final"
+const val jakartaValidationApiVersion = "3.0.0"
+const val jakartaElVersion = "4.0.1"
+const val swaggerUiVersion = "3.51.0"
+const val swaggerCoreVersion = "2.1.10"

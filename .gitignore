@@ -1,0 +1,11 @@
+*.iml
+**/.idea/*
+!.idea/vcs.xml
+!.idea/icon.png
+!.idea/detekt.xml
+!.idea/externalDependencies.xml
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build/

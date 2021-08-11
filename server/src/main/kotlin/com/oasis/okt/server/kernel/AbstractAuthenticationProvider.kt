@@ -1,9 +1,9 @@
-package com.oasis.okt.server.kernel
+@file:Suppress("unused")
 
+package com.oasis.okt.server.kernel
 
 import com.oasis.okt.server.exceptions.AuthorizationException
 import com.oasis.okt.server.plugins.route.getRequiredRoles
-import com.oasis.ons.utils.kernel.UserInterface
 import io.ktor.application.*
 import io.ktor.auth.*
 import io.ktor.routing.*

@@ -1,3 +1,4 @@
+@file:Suppress("unused")
 package com.oasis.okt.server.plugins.serialization
 
 import kotlinx.serialization.json.Json

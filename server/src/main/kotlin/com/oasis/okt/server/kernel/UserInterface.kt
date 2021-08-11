@@ -1,4 +1,4 @@
-package com.oasis.ons.utils.kernel
+package com.oasis.okt.server.kernel
 
 import io.ktor.application.*
 import io.ktor.auth.*

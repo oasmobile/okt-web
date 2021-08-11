@@ -1,4 +1,4 @@
-package com.oasis.ons.utils.route
+package com.oasis.okt.server.plugins.route
 
 import freemarker.cache.ClassTemplateLoader
 import io.ktor.application.*
@@ -18,7 +18,7 @@ import kotlin.reflect.KClass
 
 private val logger: Logger = LoggerFactory.getLogger("Swagger.support")
 
-class SwaggerSupport(val application: Application, configuration: Configuration) {
+class SwaggerSupport(private val application: Application, configuration: Configuration) {
     private val openApi = OpenAPI()
     private val swaggerUiPath = configuration.path
     private val swaggerUiTemplate = configuration.template
@@ -87,7 +87,7 @@ class SwaggerSupport(val application: Application, configuration: Configuration)
         logger.debug("init")
         application.install(Webjars)
         application.install(FreeMarker) {
-            templateLoader = ClassTemplateLoader(this::class.java.classLoader, "templates")
+            templateLoader = ClassTemplateLoader(javaClass.classLoader, "templates")
         }
 
     }

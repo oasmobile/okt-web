@@ -16,7 +16,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.runBlocking
 
-// todo: rename to EasyHttpClient
 interface EasyHttpClient {
     /**
      * @param method 请求方法

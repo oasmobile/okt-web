@@ -6,17 +6,17 @@ plugins {
     id("okt-web-common-conventions")
 }
 dependencies {
-    implementation("io.ktor:ktor-server-netty:$ktorVersion")
-    implementation("io.ktor:ktor-server-core:$ktorVersion")
-    implementation("io.ktor:ktor-auth:$ktorVersion")
-    implementation("io.ktor:ktor-serialization:$ktorVersion")
+    api("io.ktor:ktor-server-netty:$ktorVersion")
+    api("io.ktor:ktor-server-core:$ktorVersion")
+    api("io.ktor:ktor-auth:$ktorVersion")
+    api("io.ktor:ktor-serialization:$ktorVersion")
 
     // ktor-client
-    implementation("io.ktor:ktor-client-core:$ktorVersion")
-    implementation("io.ktor:ktor-client-apache:$ktorVersion")
-    implementation("io.ktor:ktor-client-core-jvm:$ktorVersion")
-    implementation("io.ktor:ktor-client-cio:$ktorVersion")
-    implementation("io.ktor:ktor-client-gson:$ktorVersion")
+    api("io.ktor:ktor-client-core:$ktorVersion")
+    api("io.ktor:ktor-client-apache:$ktorVersion")
+    api("io.ktor:ktor-client-core-jvm:$ktorVersion")
+    api("io.ktor:ktor-client-cio:$ktorVersion")
+    api("io.ktor:ktor-client-gson:$ktorVersion")
 
     // swagger support
     implementation("org.webjars:swagger-ui:$swaggerUiVersion")
@@ -24,14 +24,17 @@ dependencies {
     implementation("io.swagger.core.v3:swagger-models:$swaggerCoreVersion")
 
     // freemarker
-    implementation("io.ktor:ktor-html-builder:$ktorVersion")
-    implementation("io.ktor:ktor-freemarker:$ktorVersion")
-    implementation("io.ktor:ktor-webjars:$ktorVersion")
+    api("io.ktor:ktor-html-builder:$ktorVersion")
+    api("io.ktor:ktor-freemarker:$ktorVersion")
+    api("io.ktor:ktor-webjars:$ktorVersion")
+
+    //log
+    implementation("ch.qos.logback:logback-classic:$logbackVersion")
 
     //validate
-    implementation("org.hibernate.validator:hibernate-validator:$hibernateValidatorVersion") {
+    api("org.hibernate.validator:hibernate-validator:$hibernateValidatorVersion") {
         exclude(group = "jakarta.validation", module = "jakarta.validation-api")
     }
-    implementation("jakarta.validation:jakarta.validation-api:$jakartaValidationApiVersion")
-    implementation("org.glassfish:jakarta.el:$jakartaElVersion")
+    api("jakarta.validation:jakarta.validation-api:$jakartaValidationApiVersion")
+    api("org.glassfish:jakarta.el:$jakartaElVersion")
 }

@@ -1,4 +1,4 @@
-package com.oasis.ons.utils.route
+package com.oasis.okt.server.plugins.route
 
 import io.ktor.http.*
 import kotlin.reflect.KClass

@@ -1,8 +1,6 @@
 package com.oasis.okt.server.plugins.route
 
 import com.oasis.okt.server.exceptions.InternalServerErrorException
-import com.oasis.ons.utils.route.RouteInfo
-import com.oasis.ons.utils.route.RoutePropertyInfoImpl
 import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.http.*

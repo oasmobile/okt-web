@@ -6,11 +6,23 @@ plugins {
     // Apply the org.jetbrains.kotlin.jvm Plugin to add support for Kotlin.
     id("org.jetbrains.kotlin.jvm")
     `java-library`
+    `maven-publish`
 }
 
 repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
+}
+
+group = projectGroup
+version = projectVersion
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenLib") {
+            from(components["java"])
+        }
+    }
 }
 
 tasks.test {

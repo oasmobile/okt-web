@@ -1,7 +1,5 @@
 package com.oasis.okt.server.plugins.route
 
-import com.oasis.ons.utils.route.RouteInfo
-import com.oasis.ons.utils.route.SwaggerSupport
 import io.ktor.application.*
 import io.ktor.http.*
 import io.ktor.routing.*
@@ -76,7 +74,7 @@ open class RouteDefinitions(application: Application, configuration: Configurati
         return implementation.getOrCreateInfo(routeClass, prefix)
     }
 
-    class Configuration(val application: Application) {
+    class Configuration(application: Application) {
         val roleHashMap = hashMapOf<Int, MutableSet<String>>()
         var swaggerAvailable = application.environment.developmentMode
         var swaggerUiPath = "webapis"

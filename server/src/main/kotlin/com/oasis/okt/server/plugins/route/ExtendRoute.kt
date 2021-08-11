@@ -1,3 +1,4 @@
+@file:Suppress("unused")
 package com.oasis.okt.server.plugins.route
 
 import com.oasis.okt.server.exceptions.InvalidRequestParameterHttpException

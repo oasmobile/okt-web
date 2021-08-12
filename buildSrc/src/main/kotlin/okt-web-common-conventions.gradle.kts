@@ -19,7 +19,7 @@ version = projectVersion
 
 publishing {
     publications {
-        create<MavenPublication>("mavenLib") {
+        create<MavenPublication>("webLib") {
             from(components["java"])
         }
     }

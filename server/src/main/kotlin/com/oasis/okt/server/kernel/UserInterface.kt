@@ -5,5 +5,5 @@ import io.ktor.auth.*
 
 interface UserInterface : Principal
 
-@Suppress("UNUSED")
+@Suppress("unused")
 inline fun <reified U : UserInterface> ApplicationCall.getUser(): U? = principal()

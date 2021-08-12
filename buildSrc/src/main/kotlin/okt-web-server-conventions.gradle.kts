@@ -9,6 +9,8 @@ dependencies {
     api("io.ktor:ktor-server-netty:$ktorVersion")
     api("io.ktor:ktor-server-core:$ktorVersion")
     api("io.ktor:ktor-auth:$ktorVersion")
+    api("io.ktor:ktor-auth-jwt:$ktorVersion")
+    api("io.ktor:ktor-server-sessions:$ktorVersion")
     api("io.ktor:ktor-serialization:$ktorVersion")
 
     // ktor-client

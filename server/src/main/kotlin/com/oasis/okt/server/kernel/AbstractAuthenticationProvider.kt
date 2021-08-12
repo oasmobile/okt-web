@@ -2,7 +2,7 @@
 
 package com.oasis.okt.server.kernel
 
-import com.oasis.okt.server.exceptions.AuthorizationException
+import com.oasis.okt.server.exceptions.AccessDeniedHttpException
 import com.oasis.okt.server.plugins.route.getRequiredRoles
 import io.ktor.application.*
 import io.ktor.auth.*
@@ -18,7 +18,7 @@ abstract class AbstractAuthenticationProvider(config: Configuration) : Authentic
     }
 
     abstract class Configuration(name: String) : AuthenticationProvider.Configuration(name) {
-        internal abstract fun build(): AbstractAuthenticationProvider
+        abstract fun build(): AbstractAuthenticationProvider
     }
 
     fun register(authConfiguration: Authentication.Configuration) {
@@ -29,7 +29,7 @@ abstract class AbstractAuthenticationProvider(config: Configuration) : Authentic
         val requiredRoles = route.getRequiredRoles()
         val intersectRoles = requiredRoles intersect roles
         if (intersectRoles.size != requiredRoles.size) {
-            throw AuthorizationException(requiredRoles)
+            throw AccessDeniedHttpException(requiredRoles)
         }
         return true
     }

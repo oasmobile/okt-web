@@ -1,4 +1,5 @@
 @file:Suppress("unused")
+
 package com.oasis.okt.server.plugins.route
 
 import com.oasis.okt.server.exceptions.InvalidRequestParameterHttpException
@@ -48,6 +49,16 @@ inline fun <reified T : Any> Route.extendHandle(
         }
     } else {
         handle {
+//            val ct = call.request.headers["Content-Type"] as String
+//            val contentType = ContentType.parse(ct)
+//            println("ct ========  $ct")
+//            println("contentType ========  $contentType")
+//            when (contentType) {
+//                ContentType.Application.Json -> println("yes")
+//                ContentType.Application.FormUrlEncoded -> println("yes")
+//                ContentType.MultiPart.FormData -> println("formData")
+//
+//            }
             tmp = call.receive()
             validate(tmp!!)
             body(tmp!!)

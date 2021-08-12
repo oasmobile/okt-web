@@ -8,15 +8,15 @@ plugins {
 }
 dependencies {
     // mysql
-    implementation("mysql:mysql-connector-java:$mysqlVersion")
+    api("mysql:mysql-connector-java:$mysqlVersion")
 
     // hikari
-    implementation("com.zaxxer:HikariCP:$hikariVersion")
+    api("com.zaxxer:HikariCP:$hikariVersion")
 
     // exposed
-    implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
-    implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
-    implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+    api("org.jetbrains.exposed:exposed-core:$exposedVersion")
+    api("org.jetbrains.exposed:exposed-dao:$exposedVersion")
+    api("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
 
     //reflections
     implementation("org.reflections:reflections:$reflectionsVersion")

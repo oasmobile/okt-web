@@ -22,7 +22,10 @@ dependencies {
 
     // swagger support
     implementation("org.webjars:swagger-ui:$swaggerUiVersion")
-    implementation("io.swagger.core.v3:swagger-core:$swaggerCoreVersion")
+    implementation("io.swagger.core.v3:swagger-core:$swaggerCoreVersion"){
+        exclude(group = "jakarta.validation")
+        exclude(group = "jakarta.xml.bind")
+    }
     implementation("io.swagger.core.v3:swagger-models:$swaggerCoreVersion")
 
     // freemarker
@@ -34,9 +37,7 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:$logbackVersion")
 
     //validate
-    api("org.hibernate.validator:hibernate-validator:$hibernateValidatorVersion") {
-        exclude(group = "jakarta.validation", module = "jakarta.validation-api")
-    }
+    api("org.hibernate.validator:hibernate-validator:$hibernateValidatorVersion")
     api("jakarta.validation:jakarta.validation-api:$jakartaValidationApiVersion")
     api("org.glassfish:jakarta.el:$jakartaElVersion")
 }

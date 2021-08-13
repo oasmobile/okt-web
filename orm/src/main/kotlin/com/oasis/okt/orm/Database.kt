@@ -7,42 +7,27 @@ import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.transactions.transaction
 
-interface IDatabase {
-    suspend fun <T> execute(block: () -> T): T
-}
-
-data class DatabaseConfig(
-    val jdbcUrl: String,
-    val username: String,
-    val password: String,
-    val driverClassName: String = "com.mysql.cj.jdbc.Driver",
-    val maximumPoolSize: Int = 3,
-    val isAutoCommit: Boolean = false,
-    val transactionIsolation: String = "TRANSACTION_REPEATABLE_READ",
-)
-
 @Suppress("unused")
-class Database(private val config: DatabaseConfig) : IDatabase {
-    init {
-        Database.connect(hikari())
+object Database {
+    private var connected = false
+    fun connect(configure: HikariConfig.() -> Unit) {
+        if (connected) {
+            return
+        }
+        val config = HikariConfig().apply {
+            driverClassName = "com.mysql.cj.jdbc.Driver"
+            maximumPoolSize = 3
+            isAutoCommit = false
+            transactionIsolation = "TRANSACTION_REPEATABLE_READ"
+        }.apply(configure)
+        val dataSource = HikariDataSource(config)
+        Database.connect(dataSource)
+        connected = true
     }
 
-    override suspend fun <T> execute(block: () -> T): T = withContext(Dispatchers.IO) {
+    suspend fun <T> execute(block: () -> T): T = withContext(Dispatchers.IO) {
         transaction {
             block()
         }
-    }
-
-    private fun hikari(): HikariDataSource {
-        val configuration = HikariConfig().apply {
-            driverClassName = config.driverClassName
-            jdbcUrl = config.jdbcUrl
-            username = config.username
-            password = config.password
-            maximumPoolSize = config.maximumPoolSize
-            isAutoCommit = config.isAutoCommit
-            transactionIsolation = config.transactionIsolation
-        }
-        return HikariDataSource(configuration)
     }
 }

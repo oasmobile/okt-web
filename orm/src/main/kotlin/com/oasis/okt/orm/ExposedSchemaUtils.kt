@@ -6,7 +6,6 @@ import com.diogonunes.jcolor.Attribute.*
 import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.Table
 import org.jetbrains.exposed.sql.checkMappingConsistence
-import org.jetbrains.exposed.sql.transactions.transaction
 import org.reflections.Reflections
 import org.reflections.scanners.SubTypesScanner
 import org.reflections.util.ClasspathHelper
@@ -27,8 +26,8 @@ class ExposedSchemaUtils(packageName: String, entityPackageName: String = "entit
         println("\n" + colorize(message, BLACK_TEXT(), GREEN_BACK()) + "\n")
     }
 
-    fun dumpSql() {
-        transaction {
+    suspend fun dumpSql() {
+        Database.execute {
             colorfulPrint(" Dumping database schema... ")
             val createStatements = SchemaUtils.createStatements(*tables)
             val alterStatements = SchemaUtils.addMissingColumnsStatements(*tables)
@@ -37,7 +36,7 @@ class ExposedSchemaUtils(packageName: String, entityPackageName: String = "entit
             val finalStatements = executedStatements + modifyTablesStatements
             if (finalStatements.isEmpty()) {
                 colorfulPrint(" [OK] Nothing to update - your database is already in sync with the current entity metadata. ")
-                return@transaction
+                return@execute
             }
             colorfulPrint(" [START] Print the SQL statements. ")
             finalStatements.forEach {
@@ -47,16 +46,16 @@ class ExposedSchemaUtils(packageName: String, entityPackageName: String = "entit
         }
     }
 
-    fun update() {
-        transaction {
+    suspend fun update() {
+        Database.execute {
             colorfulPrint(" Updating database schema... ")
             SchemaUtils.createMissingTablesAndColumns(*tables)
             colorfulPrint(" [OK] Database schema updated successfully! ")
         }
     }
 
-    fun drop() {
-        transaction {
+    suspend fun drop() {
+        Database.execute {
             colorfulPrint(" Dropping database schema... ")
             SchemaUtils.drop(*tables)
             colorfulPrint(" [OK] Database schema dropped successfully! ")

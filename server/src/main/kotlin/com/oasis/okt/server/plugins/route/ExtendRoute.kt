@@ -35,8 +35,8 @@ fun Route.getRequiredRoles(): List<String> {
 }
 
 inline fun <reified T : Any> Route.extendHandle(
-    method: HttpMethod,
-    crossinline body: suspend PipelineContext<Unit, ApplicationCall>.(T) -> Unit,
+        method: HttpMethod,
+        crossinline body: suspend PipelineContext<Unit, ApplicationCall>.(T) -> Unit,
 ) {
     var tmp: T? = null
     if (method == HttpMethod.Get) {
@@ -49,16 +49,6 @@ inline fun <reified T : Any> Route.extendHandle(
         }
     } else {
         handle {
-//            val ct = call.request.headers["Content-Type"] as String
-//            val contentType = ContentType.parse(ct)
-//            println("ct ========  $ct")
-//            println("contentType ========  $contentType")
-//            when (contentType) {
-//                ContentType.Application.Json -> println("yes")
-//                ContentType.Application.FormUrlEncoded -> println("yes")
-//                ContentType.MultiPart.FormData -> println("formData")
-//
-//            }
             tmp = call.receive()
             validate(tmp!!)
             body(tmp!!)
@@ -70,7 +60,7 @@ inline fun <reified T : Any> Route.extendHandle(
 
 
 inline fun <reified T : Any> Route.route(
-    noinline body: suspend PipelineContext<Unit, ApplicationCall>.(T) -> Unit,
+        noinline body: suspend PipelineContext<Unit, ApplicationCall>.(T) -> Unit,
 ): Route {
     val prefix = application.routeDefinitions.getFullPrefix(this)
     application.log.debug("get route full prefix ===== $prefix")

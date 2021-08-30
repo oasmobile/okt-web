@@ -18,7 +18,7 @@ import kotlin.reflect.KClass
 
 private val logger: Logger = LoggerFactory.getLogger("Swagger.support")
 
-class SwaggerSupport(private val application: Application, configuration: Configuration) {
+class SwaggerSupport(val application: Application, configuration: Configuration) {
     private val openApi = OpenAPI()
     private val swaggerUiPath = configuration.path
     private val swaggerUiTemplate = configuration.template

@@ -9,7 +9,7 @@ import kotlin.collections.set
 import kotlin.reflect.KClass
 
 @Target(AnnotationTarget.CLASS)
-annotation class RouteDefinition(val method: String, val path: String, val requiredRole: String = "")
+annotation class RouteDefinition(val method: String = "", val path: String, val requiredRole: String = "")
 
 
 open class RouteDefinitions(application: Application, configuration: Configuration) {
@@ -74,7 +74,7 @@ open class RouteDefinitions(application: Application, configuration: Configurati
         return implementation.getOrCreateInfo(routeClass, prefix)
     }
 
-    class Configuration(application: Application) {
+    class Configuration(val application: Application) {
         val roleHashMap = hashMapOf<Int, MutableSet<String>>()
         var swaggerAvailable = application.environment.developmentMode
         var swaggerUiPath = "webapis"

@@ -1,4 +1,4 @@
-@file:Suppress("unused")
+@file:Suppress("unused", "EXPERIMENTAL_API_USAGE_FUTURE_ERROR")
 
 package com.oasis.okt.server.utils
 
@@ -10,20 +10,22 @@ import io.ktor.client.call.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.features.*
 import io.ktor.client.request.*
+import io.ktor.client.request.forms.*
 import io.ktor.http.*
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.future.asCompletableFuture
 import kotlinx.coroutines.runBlocking
+import java.io.File
 
 interface EasyHttpClient {
     /**
-     * @param method 请求方法
+     * @param method
      * @param url
-     * @param params 请求参数
-     * @param body 请求体
-     * @param headers 请求头
-     * @param timeout 超时时间 单位：秒
+     * @param params will be attached to the url,but form-url-encoded will be attached to request body
+     * @param body only use for json
+     * @param headers
+     * @param timeout unit：second
      */
     suspend fun request(
             method: RequestMethod,
@@ -35,7 +37,7 @@ interface EasyHttpClient {
             timeout: Int = 3,
     ): HttpResponse
 
-    suspend fun requestAsync(
+    fun requestAsync(
             method: RequestMethod,
             url: String,
             params: Map<String, String> = mapOf(),
@@ -44,6 +46,17 @@ interface EasyHttpClient {
             body: String = "",
             timeout: Int = 3,
     ): PromiseInterface<HttpResponse>
+
+    /**
+     * @param params will be attached to the request body
+     */
+    suspend fun uploadFile(
+            url: String,
+            params: Map<String, String> = mapOf(),
+            fileMap: Map<String, MultiPartFile>,
+            headers: Map<String, String> = mapOf(),
+            timeout: Int = 5,
+    ): HttpResponse
 
     fun close()
 }
@@ -66,6 +79,20 @@ enum class ContentType(val value: String) {
     JSON("application/json"),
     FORM_URL_ENCODED("application/x-www-form-urlencoded"),
     IMAGE_JPEG("image/jpeg"),
+    TEXT_PLAIN("text/plain")
+}
+
+data class MultiPartFile(
+        val fileFullPath: String,
+        val fileName: String,
+        val fileType: FileType,
+)
+
+enum class FileType(val value: String) {
+    IMAGE_PNG("image/png"),
+    IMAGE_JPG("image/jpg"),
+    TEXT_PLAIN("text/plain"),
+    JSON("application/json"),
 }
 
 /**
@@ -87,23 +114,34 @@ data class HttpResponse(val statusCode: Int, val body: String, val head: Map<Str
     }
 }
 
-class CIOEasyHttpClient : EasyHttpClient {
-    private val client: HttpClient = HttpClient(CIO) {
-        expectSuccess = true
-        engine {
-            // this: [[[https://api.ktor.io/ktor-client/ktor-client-cio/ktor-client-cio/io.ktor.client.engine.cio/-c-i-o-engine-config/index.html]]]
-            maxConnectionsCount = 1000
-            endpoint {
-                // this: EndpointConfig
-                maxConnectionsPerRoute = 100
-                pipelineMaxSize = 20
-                keepAliveTime = 5000
-                connectTimeout = 5000
-                connectAttempts = 5
+class CIOEasyHttpClient(
+        expectSuccess: Boolean,
+        maxConnectionsCount: Int,
+        maxConnectionsPerRoute: Int,
+        keepAliveTime: Long,
+        connectTimeout: Long,
+        connectAttempts: Int,
+) : EasyHttpClient {
 
+    @Suppress("JoinDeclarationAndAssignment")
+    private val client: HttpClient
+
+    constructor() : this(true, 1000, 100, 5000, 5000, 5)
+
+    init {
+        client = HttpClient(CIO) {
+            this.expectSuccess = expectSuccess
+            engine {
+                this.maxConnectionsCount = maxConnectionsCount
+                endpoint {
+                    this.maxConnectionsPerRoute = maxConnectionsPerRoute
+                    this.keepAliveTime = keepAliveTime
+                    this.connectTimeout = connectTimeout
+                    this.connectAttempts = connectAttempts
+                }
             }
+            install(HttpTimeout)
         }
-        install(HttpTimeout)
     }
 
     /**
@@ -124,15 +162,15 @@ class CIOEasyHttpClient : EasyHttpClient {
         return@coroutineScope HttpResponse.createWithCIOResponse(reqProcess.await())
     }
 
-    override suspend fun requestAsync(
+    override fun requestAsync(
             method: RequestMethod,
             url: String,
             params: Map<String, String>,
             headers: Map<String, String>,
             contentType: ContentType,
             body: String,
-            timeout: Int
-    ): PromiseInterface<HttpResponse> = coroutineScope {
+            timeout: Int,
+    ): PromiseInterface<HttpResponse> = runBlocking {
 
         val reqProcess = async {
             doSend(method, url, params, headers, contentType, body, timeout)
@@ -142,17 +180,45 @@ class CIOEasyHttpClient : EasyHttpClient {
                 runBlocking { reqProcess.await() }
             }
         })
-        reqProcess.asCompletableFuture().thenApply { cioResponse ->
+
+        // todo: handle request exception
+        val future = reqProcess.asCompletableFuture()
+        future.thenApply { cioResponse ->
             if (cioResponse == null) {
-                resultPromise.reject(Throwable("fail to send"))
+                resultPromise.reject(Throwable("fail to send request"))
             } else {
                 resultPromise.resolve(HttpResponse.createWithCIOResponse(cioResponse))
             }
         }
 
-        return@coroutineScope resultPromise
+        return@runBlocking resultPromise
     }
 
+    override suspend fun uploadFile(
+            url: String,
+            params: Map<String, String>,
+            fileMap: Map<String, MultiPartFile>,
+            headers: Map<String, String>,
+            timeout: Int,
+    ): HttpResponse {
+        val response: io.ktor.client.statement.HttpResponse = client.submitFormWithBinaryData(
+            url = url,
+            formData = formData {
+                params.forEach { this.append(it.key, it.value) }
+                fileMap.forEach {
+                    this.append(it.key, File(it.value.fileFullPath).readBytes(),
+                                Headers.build {
+                                    append(HttpHeaders.ContentType, it.value.fileType.value)
+                                    append(HttpHeaders.ContentDisposition, "filename=${it.value.fileName}")
+                                }
+                    )
+                }
+            }
+        )
+        return HttpResponse.createWithCIOResponse(response)
+    }
+
+    //ktor client dont support set content type explicitly except application/json
     private suspend fun doSend(
             method: RequestMethod,
             url: String,
@@ -160,30 +226,51 @@ class CIOEasyHttpClient : EasyHttpClient {
             headers: Map<String, String>,
             contentType: ContentType,
             body: String,
-            timeout: Int
+            timeout: Int,
     ): io.ktor.client.statement.HttpResponse {
-        return client.request(url) {
-            this.method = when (method) {
-                RequestMethod.GET    -> HttpMethod.Get
-                RequestMethod.POST   -> HttpMethod.Post
-                RequestMethod.DELETE -> HttpMethod.Delete
-                RequestMethod.HEAD   -> HttpMethod.Head
-                RequestMethod.PUT    -> HttpMethod.Put
+        try {
+            return client.request(url) {
+                this.method = setMethod(method)
+                headers.forEach {
+                    this.header(it.key, it.value)
+                }
+                if (contentType == ContentType.JSON) this.header("Content-Type", ContentType.JSON.value)
+                this.body = when (contentType) {
+                    ContentType.FORM_URL_ENCODED -> buildForm(params)
+                    ContentType.JSON             -> body
+                    else                         -> ""
+                }
+                if (contentType != ContentType.FORM_URL_ENCODED) {
+                    params.forEach { this.parameter(it.key, it.value) }
+                }
+                this.timeout {
+                    requestTimeoutMillis = (timeout * 1000).toLong()
+                    connectTimeoutMillis = (timeout * 1000).toLong()
+                    socketTimeoutMillis = (timeout * 1000).toLong()
+                }
             }
-            params.forEach {
-                this.parameter(it.key, it.value)
-            }
-            headers.forEach {
-                this.header(it.key, it.value)
-            }
-            this.timeout {
-                requestTimeoutMillis = (timeout * 1000).toLong()
-                connectTimeoutMillis = (timeout * 1000).toLong()
-                socketTimeoutMillis = (timeout * 1000).toLong()
-            }
-            this.body = body
-            if (!headers.containsKey("Content-Type")) this.headers["Content-Type"] = contentType.value
+        } catch (ex: Exception) {
+            throw HttpClientException(ex)
         }
+    }
+
+    private fun setMethod(method: RequestMethod): HttpMethod {
+        return when (method) {
+            RequestMethod.GET    -> HttpMethod.Get
+            RequestMethod.POST   -> HttpMethod.Post
+            RequestMethod.DELETE -> HttpMethod.Delete
+            RequestMethod.HEAD   -> HttpMethod.Head
+            RequestMethod.PUT    -> HttpMethod.Put
+        }
+    }
+
+    private fun buildForm(form: Map<String, String>): FormDataContent {
+        val formParameters = Parameters.build {
+            form.forEach {
+                this.append(it.key, it.value)
+            }
+        }
+        return FormDataContent(formParameters)
     }
 
     /**
@@ -192,4 +279,21 @@ class CIOEasyHttpClient : EasyHttpClient {
     override fun close() {
         client.close()
     }
+}
+
+fun HttpResponse.isSuccessful(): Boolean {
+    return this.statusCode in 200..299
+}
+
+class HttpClientException(message: String?, cause: Throwable?) : Throwable(message, cause) {
+    constructor(ex: Throwable) : this(ex.message, ex)
+
+    val responseBody: String
+        get() {
+            return if (cause is ClientRequestException) {
+                runBlocking { cause.response.receive() }
+            } else {
+                ""
+            }
+        }
 }

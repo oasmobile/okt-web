@@ -1,4 +1,4 @@
-@file:Suppress("unused")
+@file:Suppress("unused", "EXPERIMENTAL_API_USAGE_FUTURE_ERROR")
 
 package com.oasis.okt.server.kernel
 
@@ -23,6 +23,7 @@ inline fun <reified T : Any> Parameters.getMandatory(key: String): T {
     }
 }
 
+@Suppress("UNUSED")
 inline fun <reified T : Any> Parameters.getOptional(key: String, default: T): T {
     return try {
         getMandatory(key)
@@ -39,6 +40,7 @@ fun RequestCookies.toParameters(): Parameters {
     }
 }
 
+@Suppress("UNUSED")
 fun Headers.toParameters(): Parameters {
     val entries = entries()
     return Parameters.build {

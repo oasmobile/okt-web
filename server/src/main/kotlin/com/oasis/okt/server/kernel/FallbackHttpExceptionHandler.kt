@@ -12,11 +12,11 @@ import io.ktor.response.*
 fun Application.configureHttpExceptionHandler() {
     install(StatusPages) {
         exception<Throwable> { cause ->
+            cause.printStackTrace()
             val ex = if (cause !is HttpException) HttpException(cause) else cause
-            val logMsg =
-                "[fallback-exception] ERR=${ex}|CODE=${ex.code}|MSG=${ex.message}|STATUS=${ex.statusCode.value}|FILE=${ex.file}|LINE=${ex.line}"
+            val logMsg = "[fallback-exception] ERR=${ex}|CODE=${ex.code}|MSG=${ex.message}|STATUS=${ex.statusCode.value}|FILE=${ex.file}"
             minfo(logMsg)
-            mtrace(logMsg, cause)
+            mtrace(logMsg,cause)
             call.respondText(getExceptionJsonString(ex), ContentType("application", "json"), ex.statusCode)
         }
     }
@@ -30,7 +30,6 @@ private fun getExceptionJsonString(cause: HttpException): String {
                 "type" to cause.toString(),
                 "message" to cause.message,
                 "file" to cause.file,
-                "line" to cause.line
             ),
             "extra" to cause.attributes
         )

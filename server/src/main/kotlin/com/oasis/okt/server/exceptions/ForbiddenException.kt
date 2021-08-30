@@ -11,3 +11,5 @@ open class ForbiddenException(
 
 @Suppress("unused")
 class AccessDeniedHttpException(roles: List<String>) : ForbiddenException("Required roles not met, required: $roles")
+
+class AuthorizationException(roles: List<String>) : ForbiddenException("Required roles not met, required: $roles")

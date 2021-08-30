@@ -3,5 +3,5 @@
  */
 
 plugins {
-    id("okt-web-orm-conventions")
+//    id("okt-web-orm-conventions")
 }

@@ -28,7 +28,7 @@ abstract class AbstractAuthenticationProvider(config: Configuration) : Authentic
     abstract suspend fun getUser(call: RoutingApplicationCall): RequestSenderPrincipal
 
     abstract class Configuration(name: String) : AuthenticationProvider.Configuration(name) {
-        internal abstract fun build(): AbstractAuthenticationProvider
+        abstract fun build(): AbstractAuthenticationProvider
     }
 
     private suspend fun getRequestSender(appCall: RoutingApplicationCall): RequestSenderPrincipal {

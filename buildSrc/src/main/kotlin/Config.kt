@@ -1,5 +1,5 @@
 const val projectGroup = "com.oasis.okt"
-const val projectVersion = "1.0.0"
+const val projectVersion = "1.0.1"
 const val ktorVersion = "1.6.2"
 const val hibernateValidatorVersion = "7.0.1.Final"
 const val jakartaValidationApiVersion = "3.0.0"

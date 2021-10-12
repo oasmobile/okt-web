@@ -3,6 +3,7 @@
 package com.oasis.okt.server.kernel
 
 import com.oasis.okt.server.exceptions.AuthorizationException
+import com.oasis.okt.server.exceptions.UnauthorizedException
 import com.oasis.okt.server.plugins.route.getRequiredRoles
 import io.ktor.application.*
 import io.ktor.auth.*
@@ -35,7 +36,11 @@ abstract class AbstractAuthenticationProvider(config: Configuration) : Authentic
         return if (appCall.application.unitTestRequestUser != null) {
             appCall.application.unitTestRequestUser!!
         } else {
-            getUser(appCall)
+            try {
+                getUser(appCall)
+            } catch (cause: UnauthorizedException) {
+                return AnonymousRequestUser(cause)
+            }
         }
     }
 
@@ -45,7 +50,8 @@ abstract class AbstractAuthenticationProvider(config: Configuration) : Authentic
 
     private fun accessRoleVerify(sender: RequestSenderPrincipal, appCall: RoutingApplicationCall) {
         if (!sender.isGrant(appCall.requiredRoles)) {
-            throw AuthorizationException(appCall.requiredRoles)
+            val cause: Throwable? = if (sender is AnonymousRequestUser) sender.cause else null
+            throw AuthorizationException(appCall.requiredRoles, cause)
         }
     }
 }

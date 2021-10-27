@@ -51,7 +51,10 @@ abstract class AbstractAuthenticationProvider(config: Configuration) : Authentic
     private fun accessRoleVerify(sender: RequestSenderPrincipal, appCall: RoutingApplicationCall) {
         if (!sender.isGrant(appCall.requiredRoles)) {
             val cause: Throwable? = if (sender is AnonymousRequestUser) sender.cause else null
-            throw AuthorizationException(appCall.requiredRoles, cause)
+            throw AuthorizationException(appCall.requiredRoles, cause).apply {
+                attributes["errCode"] = "9004"
+                attributes["msg"] = "权限不满足"
+            }
         }
     }
 }

@@ -3,6 +3,7 @@
 package com.oasis.okt.server.kernel
 
 import com.oasis.okt.server.exceptions.AuthorizationException
+import com.oasis.okt.server.exceptions.HttpException
 import com.oasis.okt.server.exceptions.UnauthorizedException
 import com.oasis.okt.server.plugins.route.getRequiredRoles
 import io.ktor.application.*
@@ -52,8 +53,13 @@ abstract class AbstractAuthenticationProvider(config: Configuration) : Authentic
         if (!sender.isGrant(appCall.requiredRoles)) {
             val cause: Throwable? = if (sender is AnonymousRequestUser) sender.cause else null
             throw AuthorizationException(appCall.requiredRoles, cause).apply {
-                attributes["errCode"] = "9004"
-                attributes["msg"] = "权限不满足"
+                if (cause != null && cause is HttpException) {
+                    attributes["errCode"] = cause.attributes["errCode"]!!
+                    attributes["msg"] = cause.attributes["msg"]!!
+                }else{
+                    attributes["errCode"] = "9004"
+                    attributes["msg"] = "权限不满足"
+                }
             }
         }
     }

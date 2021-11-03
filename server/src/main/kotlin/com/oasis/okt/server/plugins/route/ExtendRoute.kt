@@ -39,7 +39,7 @@ inline fun <reified T : Any> Route.extendHandle(
         crossinline body: suspend PipelineContext<Unit, ApplicationCall>.(T) -> Unit,
 ) {
     var tmp: T? = null
-    if (method == HttpMethod.Get) {
+    if (method == HttpMethod.Get || method == HttpMethod.Delete) {
         intercept(ApplicationCallPipeline.Features) {
             tmp = routeDefinitions.resolve(call.parameters)
         }

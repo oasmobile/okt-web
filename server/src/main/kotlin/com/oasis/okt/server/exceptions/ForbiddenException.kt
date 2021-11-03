@@ -9,4 +9,12 @@ open class ForbiddenException(
 ) : HttpException(HttpStatusCode.Forbidden, code, message, cause)
 
 class AuthorizationException(roles: List<String>, cause: Throwable? = null) :
-    ForbiddenException(message = "Required roles not met, required: $roles", cause = cause)
+    ForbiddenException(message = "Required roles not met, required: $roles", cause = cause) {
+        init {
+            if (cause is HttpException) {
+                cause.attributes.forEach{
+                    attributes[it.key] = it.value
+                }
+            }
+        }
+    }

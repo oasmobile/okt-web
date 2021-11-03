@@ -18,6 +18,8 @@ abstract class RequestSenderPrincipal(
     }
 }
 
+class AnonymousRequestUser(val cause: Throwable) : RequestSenderPrincipal(0, mutableListOf(),"anonymous")
+
 @Suppress("UNUSED")
 inline fun <reified U : RequestSenderPrincipal> ApplicationCall.getUser(): U {
     val user = this.principal<U>()

@@ -6,8 +6,7 @@ open class UnauthorizedException(
     message: String,
     code: String = HttpStatusCode.Unauthorized.value.toString(),
     cause: Throwable? = null,
-) :
-    HttpException(HttpStatusCode.Unauthorized, code, message, cause)
+): HttpException(HttpStatusCode.Unauthorized, code, message, cause)
 
 @Suppress("unused")
 class NoCredentialsAuthenticationException(message: String) :

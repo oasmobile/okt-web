@@ -20,6 +20,10 @@ repositories {
 group = projectGroup
 version = projectVersion
 
+java {
+    withSourcesJar()
+}
+
 publishing {
     publications {
         create<MavenPublication>("webLib") {

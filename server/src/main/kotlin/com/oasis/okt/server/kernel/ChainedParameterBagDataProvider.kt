@@ -3,10 +3,12 @@
 package com.oasis.okt.server.kernel
 
 import com.oasis.okt.server.exceptions.MissingRequestParameterHttpException
+import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.util.*
+import kotlinx.coroutines.runBlocking
 
 class ChainedParameterBagDataProvider(private vararg val parameters: Parameters) {
 
@@ -48,4 +50,42 @@ fun Headers.toParameters(): Parameters {
             appendAll(it.key, it.value)
         }
     }
+}
+
+val allParameterAttribute = AttributeKey<Parameters>("all_application_call_parameters")
+
+fun ApplicationCall.getMandatoryParameter(key: String): String {
+    val paramAll = getOrPrepareParameterAll()
+    return paramAll.getMandatory(key)
+}
+
+fun ApplicationCall.getOptionalParameter(key: String, default: String): String {
+    val paramAll = getOrPrepareParameterAll()
+    return paramAll.getOptional(key, default)
+}
+
+private fun ApplicationCall.getOrPrepareParameterAll(): Parameters {
+    var paramAll = attributes.getOrNull(allParameterAttribute)
+    if (paramAll != null) {
+        return paramAll
+    }
+
+    val mapAll = mutableMapOf<String, String>()
+    val reqParams = runBlocking { receiveParameters() }
+
+    reqParams.names().forEach { paramName ->
+        mapAll[paramName] = reqParams[paramName] ?: ""
+    }
+
+    parameters.names().forEach { name ->
+        mapAll[name] = parameters[name] ?: ""
+    }
+
+    paramAll = Parameters.build {
+        mapAll.forEach { (name, value) ->
+            append(name, value)
+        }
+    }
+    attributes.put(allParameterAttribute, paramAll)
+    return paramAll
 }

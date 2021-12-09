@@ -17,13 +17,11 @@ fun Application.configureHttpExceptionHandler(configure: StatusPages.Configurati
             HttpStatusCode.MethodNotAllowed,
             HttpStatusCode.NotAcceptable
         ) {
-            val path = this.call.request.path()
-            val method = this.call.request.httpMethod.value
             respondHttpException(
                 call,
                 HttpException(
                     statusCode = it,
-                    message = "${it.description}, method=$method path=$path"
+                    message = "${it.description}, method=${this.call.request.httpMethod.value} path=${this.call.request.path()}"
                 )
             )
         }

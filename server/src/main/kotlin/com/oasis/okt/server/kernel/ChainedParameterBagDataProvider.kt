@@ -52,7 +52,7 @@ fun Headers.toParameters(): Parameters {
     }
 }
 
-val allParameterAttribute = AttributeKey<Parameters>("all_application_call_parameters")
+private val allParameterAttribute = AttributeKey<Parameters>("all_application_call_parameters")
 
 val ApplicationCall.parametersAll: Parameters
     get() {
@@ -64,21 +64,13 @@ private fun ApplicationCall.getOrPrepareParameterAll(): Parameters {
     if (paramAll != null) {
         return paramAll
     }
-
-    val mapAll = mutableMapOf<String, String>()
     val reqParams = runBlocking { receiveParameters() }
-
-    reqParams.names().forEach { paramName ->
-        mapAll[paramName] = reqParams[paramName] ?: ""
-    }
-
-    parameters.names().forEach { name ->
-        mapAll[name] = parameters[name] ?: ""
-    }
-
     paramAll = Parameters.build {
-        mapAll.forEach { (name, value) ->
-            append(name, value)
+        reqParams.names().forEach { paramName ->
+            append(paramName, reqParams[paramName] ?: "")
+        }
+        parameters.names().forEach { name ->
+            append(name, parameters[name] ?: "")
         }
     }
     attributes.put(allParameterAttribute, paramAll)

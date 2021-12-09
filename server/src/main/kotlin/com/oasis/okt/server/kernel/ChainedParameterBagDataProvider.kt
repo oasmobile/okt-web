@@ -54,15 +54,10 @@ fun Headers.toParameters(): Parameters {
 
 val allParameterAttribute = AttributeKey<Parameters>("all_application_call_parameters")
 
-fun ApplicationCall.getMandatoryParameter(key: String): String {
-    val paramAll = getOrPrepareParameterAll()
-    return paramAll.getMandatory(key)
-}
-
-fun ApplicationCall.getOptionalParameter(key: String, default: String): String {
-    val paramAll = getOrPrepareParameterAll()
-    return paramAll.getOptional(key, default)
-}
+val ApplicationCall.parametersAll: Parameters
+    get() {
+        return getOrPrepareParameterAll()
+    }
 
 private fun ApplicationCall.getOrPrepareParameterAll(): Parameters {
     var paramAll = attributes.getOrNull(allParameterAttribute)

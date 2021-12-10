@@ -2,12 +2,15 @@
 
 package com.oasis.okt.server.kernel
 
+import com.google.gson.Gson
 import com.oasis.okt.server.exceptions.MissingRequestParameterHttpException
 import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.http.*
 import io.ktor.request.*
+import io.ktor.response.*
 import io.ktor.util.*
+import io.ktor.util.reflect.*
 import kotlinx.coroutines.runBlocking
 
 class ChainedParameterBagDataProvider(private vararg val parameters: Parameters) {
@@ -75,4 +78,15 @@ private fun ApplicationCall.getOrPrepareParameterAll(): Parameters {
     }
     attributes.put(allParameterAttribute, paramAll)
     return paramAll
+}
+
+suspend inline fun <reified T : Any> ApplicationCall.respondJSON(
+        message: T,
+        status: HttpStatusCode = HttpStatusCode.OK
+) {
+    when (typeInfo<T>().type) {
+        Map::class -> respondText(Gson().toJson(message), ContentType("application", "json"), status)
+        String::class -> respondText(message.toString(), ContentType("application", "json"), status)
+        else       -> respond(message)
+    }
 }

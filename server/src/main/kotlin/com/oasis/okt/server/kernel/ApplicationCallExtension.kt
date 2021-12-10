@@ -13,6 +13,10 @@ import io.ktor.util.*
 import io.ktor.util.reflect.*
 import kotlinx.coroutines.runBlocking
 
+interface RespondData {
+    val mapValue: Map<Any, Any>
+}
+
 inline fun <reified T : Any> Parameters.getMandatory(key: String): T {
     return try {
         getOrFail<T>(key)
@@ -77,9 +81,19 @@ suspend inline fun <reified T : Any> ApplicationCall.respondJSON(
         message: T,
         status: HttpStatusCode = HttpStatusCode.OK
 ) {
-    when (typeInfo<T>().type) {
-        Map::class -> respondText(Gson().toJson(message), ContentType("application", "json"), status)
-        String::class -> respondText(message.toString(), ContentType("application", "json"), status)
-        else       -> respond(message)
+    val jsonContentType = ContentType("application", "json")
+    if (message is RespondData) {
+        respondText(
+            Gson().toJson((message as RespondData).mapValue),
+            jsonContentType,
+            status
+        )
+    } else {
+        when (typeInfo<T>().type) {
+            Map::class    -> respondText(Gson().toJson(message), jsonContentType, status)
+            String::class -> respondText(message.toString(), jsonContentType, status)
+            else          -> respond(message)
+        }
     }
+
 }

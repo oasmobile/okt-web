@@ -13,8 +13,8 @@ import io.ktor.util.*
 import io.ktor.util.reflect.*
 import kotlinx.coroutines.runBlocking
 
-interface RespondData {
-    val mapValue: Map<Any, Any>
+interface JsonRespondData {
+    val jsonMap: Map<Any, Any>
 }
 
 inline fun <reified T : Any> Parameters.getMandatory(key: String): T {
@@ -82,9 +82,9 @@ suspend inline fun <reified T : Any> ApplicationCall.respondJSON(
         status: HttpStatusCode = HttpStatusCode.OK
 ) {
     val jsonContentType = ContentType("application", "json")
-    if (message is RespondData) {
+    if (message is JsonRespondData) {
         respondText(
-            Gson().toJson((message as RespondData).mapValue),
+            Gson().toJson((message as JsonRespondData).jsonMap),
             jsonContentType,
             status
         )

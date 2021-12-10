@@ -54,7 +54,7 @@ fun Headers.toParameters(): Parameters {
 
 private val allParameterAttribute = AttributeKey<Parameters>("all_application_call_parameters")
 
-val ApplicationCall.parametersAll: Parameters
+val ApplicationCall.allParameters: Parameters
     get() {
         return getOrPrepareParameterAll()
     }

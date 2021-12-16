@@ -10,7 +10,7 @@ import io.ktor.http.*
 import io.ktor.request.*
 import io.ktor.response.*
 
-fun Application.configureHttpExceptionHandler(configure: StatusPages.Configuration.() -> Unit) {
+fun Application.configureHttpExceptionHandler(configure: StatusPages.Configuration.() -> Unit = {}) {
     install(StatusPages) {
         status(
             HttpStatusCode.NotFound,

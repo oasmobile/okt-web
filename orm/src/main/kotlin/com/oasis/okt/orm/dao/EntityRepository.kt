@@ -9,23 +9,28 @@ import kotlin.reflect.full.companionObjectInstance
 open class EntityRepository(database: MysqlDatabase) {
 
     @PublishedApi
-    internal val database = database
+    internal val db = database
+
+    val database: MysqlDatabase
+        get() {
+            return db
+        }
 
     open suspend fun <ID : Comparable<ID>> save(entity: BaseEntity<ID>, block: BaseEntity<ID>.() -> Unit = {}) {
-        database.execute {
+        db.execute {
             entity.block()
             entity.flushChanges()
         }
     }
 
     open suspend fun <ID : Comparable<ID>> delete(entity: BaseEntity<ID>) {
-        database.execute {
+        db.execute {
             entity.delete()
         }
     }
 
     suspend inline fun <reified E : BaseEntity<*>> new(crossinline block: E.() -> Unit): E {
-        return database.execute {
+        return db.execute {
             val com = E::class.companionObjectInstance
             if (com is BaseEntityClass<*, *>) {
                 return@execute com.new {

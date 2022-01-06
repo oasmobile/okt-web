@@ -18,27 +18,42 @@ open class RouteDefinitions(application: Application, configuration: Configurati
     private val roleHashMap = configuration.roleHashMap
     private val implementation = BackwardCompatibleImpl(application)
 
-    private fun setRequiredRole(code: Int, roles: MutableSet<String>) {
-        roleHashMap[code] = roles
+    private fun setRequiredRole(routeId: Int, roles: MutableSet<String>) {
+        roleHashMap[routeId] = roles
     }
 
     fun getRequiredRoles(code: Int): MutableSet<String> {
         return roleHashMap[code] ?: mutableSetOf()
     }
 
-    private fun getRecursionRequiredRoles(info: RouteInfo): MutableSet<String> {
-        val roles = mutableSetOf(info.requiredRole)
-        if (info.parent !== null) {
-            roles += getRecursionRequiredRoles(info.parent)
+    /**
+     *  Warning:
+     *  1. it is not right to sum parent role with current route role
+     *  2. current route role should override parent route role
+     *  3. if current rute role is empty use parent route role
+     *
+        private fun getRecursionRequiredRoles(info: RouteInfo): MutableSet<String> {
+            val roles = mutableSetOf(info.requiredRole)
+            if (info.parent !== null) {
+                roles += getRecursionRequiredRoles(info.parent)
+            }
+            return roles
         }
-        return roles
-    }
-
+     */
     fun setRequiredRoleToAll(route: Route, info: RouteInfo) {
-        val roles = getRecursionRequiredRoles(info)
+        //val roles = getRecursionRequiredRoles(info)
+        val roles = mutableSetOf(info.requiredRole)
         setRequiredRole(route.hashCode(), roles)
         route.children.forEach {
             setRequiredRoleToAll(it, info)
+        }
+    }
+
+    fun setRequiredRolesRecursively(route: Route, requiredRoles: List<String>) {
+        val roles = requiredRoles.toMutableSet()
+        setRequiredRole(route.hashCode(), roles)
+        route.children.forEach {
+            setRequiredRolesRecursively(it, requiredRoles)
         }
     }
 
@@ -59,10 +74,10 @@ open class RouteDefinitions(application: Application, configuration: Configurati
 
     fun getFullPrefix(route: Route): String {
         val prefix = when (route.selector) {
-            is PathSegmentConstantRouteSelector -> (route.selector as PathSegmentConstantRouteSelector).value
-            is PathSegmentParameterRouteSelector -> (route.selector as PathSegmentParameterRouteSelector).toString()
+            is PathSegmentConstantRouteSelector          -> (route.selector as PathSegmentConstantRouteSelector).value
+            is PathSegmentParameterRouteSelector         -> (route.selector as PathSegmentParameterRouteSelector).toString()
             is PathSegmentOptionalParameterRouteSelector -> (route.selector as PathSegmentOptionalParameterRouteSelector).toString()
-            else -> ""
+            else                                         -> ""
         }
         val tmp = if (prefix.isNotBlank()) "/$prefix" else ""
         return route.parent?.let {

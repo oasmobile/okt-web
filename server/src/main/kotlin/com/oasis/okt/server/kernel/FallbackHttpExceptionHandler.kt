@@ -7,24 +7,43 @@ import com.oasis.okt.server.exceptions.HttpException
 import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.http.*
+import io.ktor.request.*
 import io.ktor.response.*
 
-fun Application.configureHttpExceptionHandler() {
+fun Application.configureHttpExceptionHandler(configure: StatusPages.Configuration.() -> Unit = {}) {
     install(StatusPages) {
+        status(
+            HttpStatusCode.NotFound,
+            HttpStatusCode.MethodNotAllowed,
+            HttpStatusCode.NotAcceptable
+        ) {
+            respondHttpException(
+                call,
+                HttpException(
+                    statusCode = it,
+                    message = "${it.description}, method=${this.call.request.httpMethod.value} path=${this.call.request.path()}"
+                )
+            )
+        }
         exception<Throwable> { cause ->
             cause.printStackTrace()
             val ex = if (cause !is HttpException) HttpException(cause) else cause
             val logMsg = "[fallback-exception] ERR=${ex}|CODE=${ex.code}|MSG=${ex.message}|STATUS=${ex.statusCode.value}|FILE=${ex.file}"
             minfo(logMsg)
             mtrace(logMsg, cause)
-            call.respondText(getExceptionJsonString(ex), ContentType("application", "json"), ex.statusCode)
+            respondHttpException(call, ex)
         }
+        this.apply(configure)
     }
+}
+
+private suspend fun respondHttpException(call: ApplicationCall, ex: HttpException) {
+    call.respondText(getExceptionJsonString(ex), ContentType("application", "json"), ex.statusCode)
 }
 
 private fun getExceptionJsonString(cause: HttpException): String {
 
-    fun getParentExceptionData(ex: HttpException) : Map<String,String?> {
+    fun getParentExceptionData(ex: HttpException): Map<String, String?> {
         return if (ex.cause == null) {
             mapOf()
         } else {
